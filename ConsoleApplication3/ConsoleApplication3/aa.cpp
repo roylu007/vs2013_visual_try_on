@@ -8,7 +8,7 @@ int threshval = 160;
 int pointinterval = 200;
 vector<Point>contoursPoint1;
 vector<Point>contoursPoint2;
-int M = 10;
+int M = 15;
 void ProgramInitial(){
 	contoursPoint1.clear();
 	contoursPoint2.clear();
@@ -23,12 +23,16 @@ double getCosAngle(Point pt1, Point pt2, Point pt0)
 	return (dx1*dx2 + dy1*dy2) / sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
 }
 Point getPointP0(vector<Point>contoursPoint, Point v0){//P0  --   neck of head
+	int cnt = 0;
+	int lens = contoursPoint.size();
 	double maxCosAngle = 0;
 	int i = find(contoursPoint.begin(), contoursPoint.end(), v0) - contoursPoint.begin();
 	int j = 0;
 	Point temp;
 	Point pt(v0.x, v0.y + 1);
-	for (int j = i + 1; j < i + M; j++){
+	for (int j = i + 1>lens-1?i+1-lens:i+1; cnt <  M; j++){
+		cnt++;
+		j = j>lens - 1 ? j - lens : j;
 		double tempCosAngle = getCosAngle(contoursPoint[j], pt, v0);
 		//cout << "cosangle=" << tempCosAngle << endl;
 		if (maxCosAngle < tempCosAngle && fabs(maxCosAngle - tempCosAngle)>1e-6){
@@ -38,6 +42,69 @@ Point getPointP0(vector<Point>contoursPoint, Point v0){//P0  --   neck of head
 	}
 	return temp;
 }
+Point getPointP26(vector<Point>contoursPoint, Point v0){//P0  --   neck of head
+	int cnt = 0;
+	int lens = contoursPoint.size();
+	double maxCosAngle = 0;
+	int i = find(contoursPoint.begin(), contoursPoint.end(), v0) - contoursPoint.begin();
+	int j = 0;
+	Point temp;
+	Point pt(v0.x, v0.y + 1);
+	for (int j = i - 1 >=0 ? i-1:lens-1+i; cnt < M; j--){
+		cnt++;
+		j = j>0 ? j  : lens+j;
+		cout << j << endl;
+		double tempCosAngle = getCosAngle(contoursPoint[j], pt, v0);
+		//cout << "cosangle=" << tempCosAngle << endl;
+		if (maxCosAngle < tempCosAngle && fabs(maxCosAngle - tempCosAngle)>1e-6){
+			maxCosAngle = tempCosAngle;
+			temp = contoursPoint[j];
+		}
+	}
+	return temp;
+}
+Point getPointP25(vector<Point>contoursPoint, Point p26){//P0  --   neck of head
+	int cnt = 0;
+	int lens = contoursPoint.size();
+	double minCosAngle = 1;
+	int i = find(contoursPoint.begin(), contoursPoint.end(), p26) - contoursPoint.begin();
+	int j = 0;
+	Point temp;
+	Point pt(p26.x, p26.y + 1);
+	for (int j = i - 1 >= 0 ? i - 1 : lens - 1 + i; cnt < M; j--){
+		cnt++;
+		j = j>0 ? j : lens + j;
+		cout << j << endl;
+		double tempCosAngle = getCosAngle(contoursPoint[j], pt, p26);
+		//cout << "cosangle=" << tempCosAngle << endl;
+		if (minCosAngle > tempCosAngle && fabs(minCosAngle - tempCosAngle)>1e-6){
+			minCosAngle = tempCosAngle;
+			temp = contoursPoint[j];
+		}
+	}
+	return temp;
+}
+Point getPointP1(vector<Point>contoursPoint, Point p0){
+	int cnt = 0;
+	int lens = contoursPoint.size();
+	double minCosAngle = 1;
+	int i = find(contoursPoint.begin(), contoursPoint.end(), p0) - contoursPoint.begin();
+	int j = 0;
+	Point temp;
+	Point pt(p0.x, p0.y + 1);
+	for (int j = i + 1>lens - 1 ? i + 1 - lens : i+1; cnt < M; j++){//if i>size-1 then i start from 0
+		cnt++;
+		j = j>lens - 1 ? j - lens : j;
+		double tempCosAngle = getCosAngle(contoursPoint[j], pt, p0);
+		//cout << "cosangle=" << tempCosAngle << endl;
+		if (minCosAngle > tempCosAngle && fabs(minCosAngle - tempCosAngle)>1e-6){
+			minCosAngle = tempCosAngle;
+			temp = contoursPoint[j];
+		}
+	}
+	return temp;
+}
+
 Point getPointV0(vector<Point>contoursPoint){//V0  --   top of head 
 	Point temp;
 	int min = 1024;
@@ -125,10 +192,16 @@ void getSpecialPoint27(IplImage *srcBw, vector<Point>contoursPoint){
 	//v0   top of head  v0-vcontoursPoint.size;
 	Point v0 = getPointV0(contoursPoint);
 	cout << "V0_y=" << v0.y << endl;
-	//cvCircle(srcBw, v0, 5, CV_RGB(0, 0, 255), -1, 8, 0);
+	cvCircle(srcBw, v0, 6, CV_RGB(0, 0, 255), -1, 8, 0);
 	//Point p0 = getPointP0(contoursPoint, v0);
 	Point p0 = getPointP0(contoursPoint, v0);
 	cvCircle(srcBw, p0, 5, CV_RGB(0, 255, 0), -1, 8, 0);
+	Point p1 = getPointP1(contoursPoint, p0);
+	cvCircle(srcBw, p1, 5, CV_RGB(0, 255, 0), -1, 8, 0);
+	Point p26 = getPointP26(contoursPoint, v0);
+	cvCircle(srcBw, p26, 5, CV_RGB(0, 255, 0), -1, 8, 0);
+	Point p25 = getPointP25(contoursPoint, p26);
+	cvCircle(srcBw, p25, 5, CV_RGB(0, 255, 0), -1, 8, 0);
 }
 int main()
 {
