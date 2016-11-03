@@ -13,6 +13,14 @@ void ProgramInitial(){
 	contoursPoint1.clear();
 	contoursPoint2.clear();
 }
+double getDistance(Point p1,Point p2){
+	return sqrt((p1.x-p2.x)*(p1.x-p2.x)+(p1.y-p2.y)*(p1.y-p2.y));
+}
+double getCosAngle2(Point pt1, Point pt2, Point pt3, Point pt4){
+	Point p1 = pt2 - pt1;
+	Point p2 = pt4 - pt3;
+	return (p1.x*p2.x + p1.y*p2.y) / sqrt((p1.x*p1.x + p1.y*p1.y)*(p2.x*p2.x + p2.y*p2.y) + 1e-10);
+}
 //double angle( CvPoint* pt1, CvPoint* pt2, CvPoint* pt0 )  from pt0->pt1 and from pt0->pt2
 double getCosAngle(Point pt1, Point pt2, Point pt0)
 {
@@ -116,26 +124,78 @@ Point getPointV0(vector<Point>contoursPoint){//V0  --   top of head
 	}
 	return temp;
 }
-Point getPointV1(vector<Point>contoursPoint){//V1  --   right_fingertip   point.x  ->min
+Point getPointV1(vector<Point>contoursPoint,Point p1){//V1  --   right_fingertip   point.y  ->max  during 4M
+	int cnt = 0;
+	int lens = contoursPoint.size();
+	int i = find(contoursPoint.begin(), contoursPoint.end(), p1) - contoursPoint.begin();
+	int j = 0;
+	int maxy = 0;
 	Point temp;
-	int minx = 1024;
-	for (int i = 0; i < contoursPoint.size(); i++){
-		if (minx > contoursPoint[i].x){
-			minx = contoursPoint[i].x;
-			temp = contoursPoint[i];
+	for (int j = i + 1 > lens - 1 ? i + 1 - lens : i + 1; cnt < 4 * M; j++){
+		cnt++;
+		j = j>lens - 1 ? j - lens : j;
+		if (maxy < contoursPoint[j].y){
+			maxy = contoursPoint[j].y;
+			temp = contoursPoint[j];
 		}
 	}
 	return temp;
 }
-Point getPointV2(vector<Point>contoursPoint){//V2  --   left_fingertip   point.x  ->max
+Point getPointV2(vector<Point>contoursPoint,Point p25){//V2  --   left_fingertip   point.x  ->max
+	int cnt = 0;
+	int lens = contoursPoint.size();
+	int i = find(contoursPoint.begin(), contoursPoint.end(), p25) - contoursPoint.begin();
+	int j = 0;
+	int maxy = 0;
 	Point temp;
-	int maxx = 0;
-	for (int i = 0; i < contoursPoint.size(); i++){
-		if (maxx < contoursPoint[i].x){
-			maxx = contoursPoint[i].x;
+	for (int j = i - 1 >= 0 ? i - 1 : lens - 1 + i; cnt <4 * M; j--){
+		cnt++;
+		j = j>0 ? j : lens + j;
+		if (maxy < contoursPoint[j].y){
+			maxy = contoursPoint[j].y;
+			temp = contoursPoint[j];
+		}
+	}
+	return temp;
+}
+Point getPointP2(vector<Point>contoursPoint, Point p1, Point v1){
+	double p1v1Dis = getDistance(p1,v1);
+	double minDis = p1v1Dis;
+	Point temp;
+	int from = find(contoursPoint.begin(), contoursPoint.end(), p1) - contoursPoint.begin();
+	int to = find(contoursPoint.begin(), contoursPoint.end(), v1) - contoursPoint.begin();
+	for (int i = from + 1; i < to; i++){
+		double PFromdis = getDistance(contoursPoint[i],p1);
+		double PToDis = getDistance(contoursPoint[i], v1);
+		double diff1 = fabs(PFromdis - p1v1Dis / 3.0);
+		double diff2 = fabs(PToDis - p1v1Dis*2.0 / 3.0);
+		double diff = diff1 + diff2;
+		if (minDis>diff){
+			minDis = diff;
 			temp = contoursPoint[i];
 		}
 	}
+	//temp = contoursPoint[from + (to - from) / 3];
+	return temp;
+}
+Point getPointP24(vector<Point>contoursPoint, Point v2, Point p25){
+	double p1v1Dis = getDistance(v2, p25);
+	double minDis = p1v1Dis;
+	Point temp;
+	int from = find(contoursPoint.begin(), contoursPoint.end(), v2) - contoursPoint.begin();
+	int to = find(contoursPoint.begin(), contoursPoint.end(), p25) - contoursPoint.begin();
+	for (int i = from + 1; i < to; i++){
+		double PFromdis = getDistance(contoursPoint[i], v2);
+		double PToDis = getDistance(contoursPoint[i], p25);
+		double diff1 = fabs(PFromdis - p1v1Dis *2.0/ 3.0);
+		double diff2 = fabs(PToDis - p1v1Dis / 3.0);
+		double diff = diff1 + diff2;
+		if (minDis>diff){
+			minDis = diff;
+			temp = contoursPoint[i];
+		}
+	}
+	//temp = contoursPoint[from + (to - from) / 3];
 	return temp;
 }
 Point getPointP6(vector<Point>contoursPoint, Point v1){
@@ -301,11 +361,6 @@ void getSpecialPoint27(IplImage *srcBw, vector<Point>contoursPoint){
 	Point v0 = getPointV0(contoursPoint);
 	cout << "V0_y=" << v0.y << endl;
 	cvCircle(srcBw, v0, 6, CV_RGB(0, 0, 255), -1, 8, 0);
-	Point v1 = getPointV1(contoursPoint);
-	cvCircle(srcBw, v1, 6, CV_RGB(0, 0, 255), -1, 8, 0);
-	cout << "V1_y=" << v1.y << endl;
-	Point v2 = getPointV2(contoursPoint);
-	cvCircle(srcBw, v2, 6, CV_RGB(0, 0, 255), -1, 8, 0);
 	//Point p0 = getPointP0(contoursPoint, v0);
 	Point p0 = getPointP0(contoursPoint, v0);
 	cvCircle(srcBw, p0, 5, CV_RGB(0, 255, 0), -1, 8, 0);
@@ -315,6 +370,11 @@ void getSpecialPoint27(IplImage *srcBw, vector<Point>contoursPoint){
 	cvCircle(srcBw, p26, 5, CV_RGB(0, 255, 0), -1, 8, 0);
 	Point p25 = getPointP25(contoursPoint, p26);
 	cvCircle(srcBw, p25, 5, CV_RGB(0, 255, 0), -1, 8, 0);
+	Point v1 = getPointV1(contoursPoint,p1);
+	cvCircle(srcBw, v1, 6, CV_RGB(0, 0, 255), -1, 8, 0);
+	cout << "V1_y=" << v1.y << endl;
+	Point v2 = getPointV2(contoursPoint,p25);
+	cvCircle(srcBw, v2, 6, CV_RGB(0, 0, 255), -1, 8, 0);
 	Point p6 = getPointP6(contoursPoint, v1);
 	cvCircle(srcBw, p6, 5, CV_RGB(0, 255, 0), -1, 8, 0);
 	Point p20 = getPointP20(contoursPoint, v2);
@@ -325,6 +385,10 @@ void getSpecialPoint27(IplImage *srcBw, vector<Point>contoursPoint){
 	cvCircle(srcBw, v4, 5, CV_RGB(0, 0, 255), -1, 8, 0);
 	Point p13 = getPointP13(contoursPoint, v3);
 	cvCircle(srcBw, p13, 5, CV_RGB(0, 255, 0), -1, 8, 0);
+	Point p2 = getPointP2(contoursPoint, p1,v1);
+	cvCircle(srcBw, p2, 5, CV_RGB(0, 255, 0), -1, 8, 0);
+	Point p24 = getPointP24(contoursPoint, v2, p25);
+	cvCircle(srcBw, p24, 5, CV_RGB(0, 255, 0), -1, 8, 0);
 }
 int main()
 {
