@@ -13,8 +13,8 @@ void ProgramInitial(){
 	contoursPoint1.clear();
 	contoursPoint2.clear();
 }
-double getDistance(Point p1,Point p2){
-	return sqrt((p1.x-p2.x)*(p1.x-p2.x)+(p1.y-p2.y)*(p1.y-p2.y));
+double getDistance(Point p1, Point p2){
+	return sqrt((p1.x - p2.x)*(p1.x - p2.x) + (p1.y - p2.y)*(p1.y - p2.y));
 }
 double getCosAngle2(Point pt1, Point pt2, Point pt3, Point pt4){
 	Point p1 = pt2 - pt1;
@@ -124,7 +124,7 @@ Point getPointV0(vector<Point>contoursPoint){//V0  --   top of head
 	}
 	return temp;
 }
-Point getPointV1(vector<Point>contoursPoint,Point p1){//V1  --   right_fingertip   point.y  ->max  during 4M
+Point getPointV1(vector<Point>contoursPoint, Point p1){//V1  --   right_fingertip   point.y  ->max  during 4M
 	int cnt = 0;
 	int lens = contoursPoint.size();
 	int i = find(contoursPoint.begin(), contoursPoint.end(), p1) - contoursPoint.begin();
@@ -141,7 +141,7 @@ Point getPointV1(vector<Point>contoursPoint,Point p1){//V1  --   right_fingertip
 	}
 	return temp;
 }
-Point getPointV2(vector<Point>contoursPoint,Point p25){//V2  --   left_fingertip   point.x  ->max
+Point getPointV2(vector<Point>contoursPoint, Point p25){//V2  --   left_fingertip   point.x  ->max
 	int cnt = 0;
 	int lens = contoursPoint.size();
 	int i = find(contoursPoint.begin(), contoursPoint.end(), p25) - contoursPoint.begin();
@@ -159,18 +159,18 @@ Point getPointV2(vector<Point>contoursPoint,Point p25){//V2  --   left_fingertip
 	return temp;
 }
 Point getPointP2(vector<Point>contoursPoint, Point p1, Point v1){
-	double p1v1Dis = getDistance(p1,v1);
+	double p1v1Dis = getDistance(p1, v1);
 	double minDis = p1v1Dis;
 	Point temp;
 	int from = find(contoursPoint.begin(), contoursPoint.end(), p1) - contoursPoint.begin();
 	int to = find(contoursPoint.begin(), contoursPoint.end(), v1) - contoursPoint.begin();
 	for (int i = from + 1; i < to; i++){
-		double PFromdis = getDistance(contoursPoint[i],p1);
+		double PFromdis = getDistance(contoursPoint[i], p1);
 		double PToDis = getDistance(contoursPoint[i], v1);
 		double diff1 = fabs(PFromdis - p1v1Dis * 2.0 / 5.0);
 		double diff2 = fabs(PToDis - p1v1Dis * 3.0 / 5.0);
 		double diff = diff1 + diff2;
-		if (minDis>diff && fabs(minDis - diff)>1e-6){
+		if (minDis>diff && fabs(minDis - diff) > 1e-6){
 			minDis = diff;
 			temp = contoursPoint[i];
 		}
@@ -187,10 +187,10 @@ Point getPointP24(vector<Point>contoursPoint, Point v2, Point p25){
 	for (int i = from + 1; i < to; i++){
 		double PFromdis = getDistance(contoursPoint[i], v2);
 		double PToDis = getDistance(contoursPoint[i], p25);
-		double diff1 = fabs(PFromdis - p1v1Dis *3.0/ 5.0);
-		double diff2 = fabs(PToDis - p1v1Dis *2.0/ 3.0);
+		double diff1 = fabs(PFromdis - p1v1Dis *3.0 / 5.0);
+		double diff2 = fabs(PToDis - p1v1Dis *2.0 / 3.0);
 		double diff = diff1 + diff2;
-		if (minDis>diff && fabs(minDis-diff)>1e-6){
+		if (minDis>diff && fabs(minDis - diff) > 1e-6){
 			minDis = diff;
 			temp = contoursPoint[i];
 		}
@@ -206,13 +206,21 @@ Point getPointP3(vector<Point>contoursPoint, Point p1, Point p2, Point v1){
 	int from = find(contoursPoint.begin(), contoursPoint.end(), p2) - contoursPoint.begin();
 	int to = find(contoursPoint.begin(), contoursPoint.end(), v1) - contoursPoint.begin();
 	//double p1p2Dis = getDistance(p1, p2);
-	for (int i = from + 1; i < to; i++){
+	/*for (int i = from + 1; i < to; i++){
 		double PFromDis = getDistance(contoursPoint[i], p2);
 		double PToDis = getDistance(contoursPoint[i], v1);
 		double diff1 = fabs(PFromDis - p2v1Dis*2.0/3.0);
 		double diff2 = fabs(PToDis - p2v1Dis / 3.0);
 		double diff = diff1+diff2;
 		if (minDis>diff && fabs(minDis - diff)>1e-6){
+		minDis = diff;
+		temp = contoursPoint[i];
+		}
+		}*/
+	for (int i = from + 1; i < to; i++){
+		double PP2Dis = getDistance(contoursPoint[i], p2);
+		double diff = fabs(p1p2Dis*0.80447 - PP2Dis);
+		if (minDis>diff && fabs(minDis - diff) > 1e-6){
 			minDis = diff;
 			temp = contoursPoint[i];
 		}
@@ -228,13 +236,21 @@ Point getPointP23(vector<Point>contoursPoint, Point p24, Point p25, Point v2){
 	int from = find(contoursPoint.begin(), contoursPoint.end(), v2) - contoursPoint.begin();
 	int to = find(contoursPoint.begin(), contoursPoint.end(), p24) - contoursPoint.begin();
 	//double p1p2Dis = getDistance(p1, p2);
-	for (int i = from + 1; i < to; i++){
+	/*for (int i = from + 1; i < to; i++){
 		double PFromDis = getDistance(contoursPoint[i], v2);
 		double PToDis = getDistance(contoursPoint[i], p24);
 		double diff1 = fabs(PFromDis - v2p24Dis / 3.0);
 		double diff2 = fabs(PToDis - v2p24Dis *2.0 / 3.0);
 		double diff = diff1 + diff2;
 		if (minDis>diff && fabs(minDis - diff)>1e-6){
+		minDis = diff;
+		temp = contoursPoint[i];
+		}
+		}*/
+	for (int i = from + 1; i < to; i++){
+		double PP24Dis = getDistance(contoursPoint[i], p24);
+		double diff = fabs(p24p25Dis*0.80447 - PP24Dis);
+		if (minDis>diff && fabs(minDis - diff) > 1e-6){
 			minDis = diff;
 			temp = contoursPoint[i];
 		}
@@ -242,15 +258,15 @@ Point getPointP23(vector<Point>contoursPoint, Point p24, Point p25, Point v2){
 	//temp = contoursPoint[from + (to - from) / 3];
 	return temp;
 }
-Point getPointP4(vector<Point>contoursPoint, Point p2, Point p3,Point v1,Point p6){
+Point getPointP4(vector<Point>contoursPoint, Point p2, Point p3, Point v1, Point p6){
 	int from = find(contoursPoint.begin(), contoursPoint.end(), v1) - contoursPoint.begin();
 	int to = find(contoursPoint.begin(), contoursPoint.end(), p6) - contoursPoint.begin();
 	Point temp;
 	double minCosAngle = 1;
 	for (int i = from + 1; i < to; i++){
-		double PP3P2CosAngle = getCosAngle(p2,contoursPoint[i],p3);
-		double diff = fabs(PP3P2CosAngle)-0;
-		if (minCosAngle>diff && fabs(minCosAngle - diff)>1e-6){
+		double PP3P2CosAngle = getCosAngle(p2, contoursPoint[i], p3);
+		double diff = fabs(PP3P2CosAngle) - 0;
+		if (minCosAngle>diff && fabs(minCosAngle - diff) > 1e-6){
 			minCosAngle = diff;
 			temp = contoursPoint[i];
 		}
@@ -265,7 +281,7 @@ Point getPointP5(vector<Point>contoursPoint, Point p1, Point p2, Point v1, Point
 	for (int i = from + 1; i < to; i++){
 		double PP3P2CosAngle = getCosAngle(p1, contoursPoint[i], p2);
 		double diff = fabs(PP3P2CosAngle) - 0;
-		if (minCosAngle>diff && fabs(minCosAngle - diff)>1e-6){
+		if (minCosAngle>diff && fabs(minCosAngle - diff) > 1e-6){
 			minCosAngle = diff;
 			temp = contoursPoint[i];
 		}
@@ -280,7 +296,7 @@ Point getPointP21(vector<Point>contoursPoint, Point p25, Point p24, Point p20, P
 	for (int i = from + 1; i < to; i++){
 		double PP3P2CosAngle = getCosAngle(p25, contoursPoint[i], p24);
 		double diff = fabs(PP3P2CosAngle) - 0;
-		if (minCosAngle>diff && fabs(minCosAngle - diff)>1e-6){
+		if (minCosAngle>diff && fabs(minCosAngle - diff) > 1e-6){
 			minCosAngle = diff;
 			temp = contoursPoint[i];
 		}
@@ -291,12 +307,12 @@ Point getPointP7(vector<Point>contoursPoint, Point p5, Point p6, Point v3){
 	int from = find(contoursPoint.begin(), contoursPoint.end(), p6) - contoursPoint.begin();
 	int to = find(contoursPoint.begin(), contoursPoint.end(), v3) - contoursPoint.begin();
 	Point temp;
-	double p5p6Dis = getDistance(p5,p6);
+	double p5p6Dis = getDistance(p5, p6);
 	double minDis = p5p6Dis;
 	for (int i = from + 1; i < to; i++){
-		double PP6Dis = getDistance(contoursPoint[i],p6);
-		double diff = fabs(p5p6Dis-PP6Dis);
-		if (minDis>diff && fabs(minDis - diff)>1e-6){
+		double PP6Dis = getDistance(contoursPoint[i], p6);
+		double diff = fabs(p5p6Dis - PP6Dis);
+		if (minDis>diff && fabs(minDis - diff) > 1e-6){
 			minDis = diff;
 			temp = contoursPoint[i];
 		}
@@ -312,7 +328,7 @@ Point getPointP19(vector<Point>contoursPoint, Point p21, Point p20, Point v4){
 	for (int i = from + 1; i < to; i++){
 		double PP20Dis = getDistance(contoursPoint[i], p20);
 		double diff = fabs(p20p21Dis - PP20Dis);
-		if (minDis>diff && fabs(minDis - diff)>1e-6){
+		if (minDis>diff && fabs(minDis - diff) > 1e-6){
 			minDis = diff;
 			temp = contoursPoint[i];
 		}
@@ -323,12 +339,12 @@ Point getPointP8(vector<Point>contoursPoint, Point p6, Point p7, Point v3){
 	int from = find(contoursPoint.begin(), contoursPoint.end(), p7) - contoursPoint.begin();
 	int to = find(contoursPoint.begin(), contoursPoint.end(), v3) - contoursPoint.begin();
 	Point temp;
-	double p6p7Dis = getDistance(p6,p7);
+	double p6p7Dis = getDistance(p6, p7);
 	double minDis = p6p7Dis;
 	for (int i = from + 1; i < to; i++){
 		double PP20Dis = getDistance(contoursPoint[i], p7);
 		double diff = fabs(p6p7Dis - PP20Dis);
-		if (minDis>diff && fabs(minDis - diff)>1e-6){
+		if (minDis>diff && fabs(minDis - diff) > 1e-6){
 			minDis = diff;
 			temp = contoursPoint[i];
 		}
@@ -344,7 +360,7 @@ Point getPointP9(vector<Point>contoursPoint, Point p6, Point p8, Point v3){
 	for (int i = from + 1; i < to; i++){
 		double PP8Dis = getDistance(contoursPoint[i], p8);
 		double diff = fabs(p6p8Dis - PP8Dis);
-		if (minDis>diff && fabs(minDis - diff)>1e-6){
+		if (minDis>diff && fabs(minDis - diff) > 1e-6){
 			minDis = diff;
 			temp = contoursPoint[i];
 		}
@@ -359,9 +375,39 @@ Point getPointP10(vector<Point>contoursPoint, Point p8, Point p9, Point v3){
 	double minDis = p8p9Dis;
 	for (int i = from + 1; i < to; i++){
 		double PP8Dis = getDistance(contoursPoint[i], p9);
-		double diff = fabs(p8p9Dis - PP8Dis);
-		if (minDis>diff && fabs(minDis - diff)>1e-6){
+		double diff = fabs(p8p9Dis*0.8885 - PP8Dis);
+		if (minDis>diff && fabs(minDis - diff) > 1e-6){
 			minDis = diff;
+			temp = contoursPoint[i];
+		}
+	}
+	return temp;
+}
+Point getPointP11(vector<Point>contoursPoint, Point p9, Point p10, Point v3, Point p13){
+	int from = find(contoursPoint.begin(), contoursPoint.end(), v3) - contoursPoint.begin();
+	int to = find(contoursPoint.begin(), contoursPoint.end(), p13) - contoursPoint.begin();
+	Point temp;
+	double minCosAngle = 1;
+	for (int i = from + 1; i < to; i++){
+		double PP10P9CosAngle = getCosAngle(p9, contoursPoint[i], p10);
+		double diff = fabs(PP10P9CosAngle) - 0;
+		if (minCosAngle>diff && fabs(minCosAngle - diff) > 1e-6){
+			minCosAngle = diff;
+			temp = contoursPoint[i];
+		}
+	}
+	return temp;
+}
+Point getPointP12(vector<Point>contoursPoint, Point p8, Point p9, Point v3, Point p13){
+	int from = find(contoursPoint.begin(), contoursPoint.end(), v3) - contoursPoint.begin();
+	int to = find(contoursPoint.begin(), contoursPoint.end(), p13) - contoursPoint.begin();
+	Point temp;
+	double minCosAngle = 1;
+	for (int i = from + 1; i < to; i++){
+		double PP9P8CosAngle = getCosAngle(p8, contoursPoint[i], p9);
+		double diff = fabs(PP9P8CosAngle) - 0;
+		if (minCosAngle>diff && fabs(minCosAngle - diff) > 1e-6){
+			minCosAngle = diff;
 			temp = contoursPoint[i];
 		}
 	}
@@ -374,15 +420,15 @@ Point getPointP10(vector<Point>contoursPoint, Point p8, Point p9, Point v3){
 	double p13p9YDiff = fabs(1.0*(p13.y - p9.y));
 	double minYDiff = p13p9YDiff;
 	for (int i = from + 1; i < to; i++){
-		double PP9YDiff = fabs(1.0*(p9.y-contoursPoint[i].y));
-		double diff = fabs(PP9YDiff - p13p9YDiff);
-		if (minYDiff>diff && fabs(minYDiff - diff)>1e-6){
-			minYDiff = diff;
-			temp = contoursPoint[i];
-		}
+	double PP9YDiff = fabs(1.0*(p9.y-contoursPoint[i].y));
+	double diff = fabs(PP9YDiff - p13p9YDiff);
+	if (minYDiff>diff && fabs(minYDiff - diff)>1e-6){
+	minYDiff = diff;
+	temp = contoursPoint[i];
+	}
 	}
 	return temp;
-}*/
+	}*/
 Point getPointP18(vector<Point>contoursPoint, Point p20, Point p19, Point v4){
 	int from = find(contoursPoint.begin(), contoursPoint.end(), v4) - contoursPoint.begin();
 	int to = find(contoursPoint.begin(), contoursPoint.end(), p19) - contoursPoint.begin();
@@ -392,7 +438,7 @@ Point getPointP18(vector<Point>contoursPoint, Point p20, Point p19, Point v4){
 	for (int i = from + 1; i < to; i++){
 		double PP19Dis = getDistance(contoursPoint[i], p19);
 		double diff = fabs(p19p20Dis - PP19Dis);
-		if (minDis>diff && fabs(minDis - diff)>1e-6){
+		if (minDis>diff && fabs(minDis - diff) > 1e-6){
 			minDis = diff;
 			temp = contoursPoint[i];
 		}
@@ -408,7 +454,7 @@ Point getPointP17(vector<Point>contoursPoint, Point p20, Point p18, Point v4){
 	for (int i = from + 1; i < to; i++){
 		double PP18Dis = getDistance(contoursPoint[i], p18);
 		double diff = fabs(p18p20Dis - PP18Dis);
-		if (minDis>diff && fabs(minDis - diff)>1e-6){
+		if (minDis>diff && fabs(minDis - diff) > 1e-6){
 			minDis = diff;
 			temp = contoursPoint[i];
 		}
@@ -423,14 +469,45 @@ Point getPointP16(vector<Point>contoursPoint, Point p18, Point p17, Point v4){
 	double minDis = p17p18Dis;
 	for (int i = from + 1; i < to; i++){
 		double PP17Dis = getDistance(contoursPoint[i], p17);
-		double diff = fabs(p17p18Dis - PP17Dis);
-		if (minDis>diff && fabs(minDis - diff)>1e-6){
+		double diff = fabs(p17p18Dis *0.8885 - PP17Dis);
+		if (minDis>diff && fabs(minDis - diff) > 1e-6){
 			minDis = diff;
 			temp = contoursPoint[i];
 		}
 	}
 	return temp;
 }
+Point getPointP15(vector<Point>contoursPoint, Point p17, Point p16, Point p13, Point v4){
+	int from = find(contoursPoint.begin(), contoursPoint.end(), p13) - contoursPoint.begin();
+	int to = find(contoursPoint.begin(), contoursPoint.end(), v4) - contoursPoint.begin();
+	Point temp;
+	double minCosAngle = 1;
+	for (int i = from + 1; i < to; i++){
+		double PP16P17CosAngle = getCosAngle(p17, contoursPoint[i], p16);
+		double diff = fabs(PP16P17CosAngle) - 0;
+		if (minCosAngle>diff && fabs(minCosAngle - diff) > 1e-6){
+			minCosAngle = diff;
+			temp = contoursPoint[i];
+		}
+	}
+	return temp;
+}
+Point getPointP14(vector<Point>contoursPoint, Point p18, Point p17, Point p13, Point v4){
+	int from = find(contoursPoint.begin(), contoursPoint.end(), p13) - contoursPoint.begin();
+	int to = find(contoursPoint.begin(), contoursPoint.end(), v4) - contoursPoint.begin();
+	Point temp;
+	double minCosAngle = 1;
+	for (int i = from + 1; i < to; i++){
+		double PP17P18CosAngle = getCosAngle(p18, contoursPoint[i], p17);
+		double diff = fabs(PP17P18CosAngle) - 0;
+		if (minCosAngle>diff && fabs(minCosAngle - diff) > 1e-6){
+			minCosAngle = diff;
+			temp = contoursPoint[i];
+		}
+	}
+	return temp;
+}
+
 Point getPointP22(vector<Point>contoursPoint, Point p24, Point p23, Point p20, Point v2){
 	int from = find(contoursPoint.begin(), contoursPoint.end(), p20) - contoursPoint.begin();
 	int to = find(contoursPoint.begin(), contoursPoint.end(), v2) - contoursPoint.begin();
@@ -439,7 +516,7 @@ Point getPointP22(vector<Point>contoursPoint, Point p24, Point p23, Point p20, P
 	for (int i = from + 1; i < to; i++){
 		double PP3P2CosAngle = getCosAngle(p24, contoursPoint[i], p23);
 		double diff = fabs(PP3P2CosAngle) - 0;
-		if (minCosAngle>diff && fabs(minCosAngle - diff)>1e-6){
+		if (minCosAngle>diff && fabs(minCosAngle - diff) > 1e-6){
 			minCosAngle = diff;
 			temp = contoursPoint[i];
 		}
@@ -504,7 +581,7 @@ Point getPointV4(vector<Point>contoursPoint, Point p20){ //v4 -- left_toe Point 
 	int j = 0;
 	int maxy = 0;
 	Point temp;
-	for (int j = i - 1 >= 0 ? i - 1 : lens - 1 + i; cnt <4* M; j--){
+	for (int j = i - 1 >= 0 ? i - 1 : lens - 1 + i; cnt <4 * M; j--){
 		cnt++;
 		j = j>0 ? j : lens + j;
 		if (maxy < contoursPoint[j].y){
@@ -514,7 +591,7 @@ Point getPointV4(vector<Point>contoursPoint, Point p20){ //v4 -- left_toe Point 
 	}
 	return temp;
 }
-Point getPointP13(vector<Point>contoursPoint, Point v3){  
+Point getPointP13(vector<Point>contoursPoint, Point v3){
 	int cnt = 0;
 	int lens = contoursPoint.size();
 	int i = find(contoursPoint.begin(), contoursPoint.end(), v3) - contoursPoint.begin();
@@ -618,10 +695,10 @@ void getSpecialPoint27(IplImage *srcBw, vector<Point>contoursPoint){
 	cvCircle(srcBw, p26, 5, CV_RGB(0, 255, 0), -1, 8, 0);
 	Point p25 = getPointP25(contoursPoint, p26);
 	cvCircle(srcBw, p25, 5, CV_RGB(0, 255, 0), -1, 8, 0);
-	Point v1 = getPointV1(contoursPoint,p1);
+	Point v1 = getPointV1(contoursPoint, p1);
 	cvCircle(srcBw, v1, 6, CV_RGB(0, 0, 255), -1, 8, 0);
 	cout << "V1_y=" << v1.y << endl;
-	Point v2 = getPointV2(contoursPoint,p25);
+	Point v2 = getPointV2(contoursPoint, p25);
 	cvCircle(srcBw, v2, 6, CV_RGB(0, 0, 255), -1, 8, 0);
 	Point p6 = getPointP6(contoursPoint, v1);
 	cvCircle(srcBw, p6, 5, CV_RGB(0, 255, 0), -1, 8, 0);
@@ -633,15 +710,15 @@ void getSpecialPoint27(IplImage *srcBw, vector<Point>contoursPoint){
 	cvCircle(srcBw, v4, 5, CV_RGB(0, 0, 255), -1, 8, 0);
 	Point p13 = getPointP13(contoursPoint, v3);
 	cvCircle(srcBw, p13, 5, CV_RGB(0, 255, 0), -1, 8, 0);
-	Point p2 = getPointP2(contoursPoint, p1,v1);
+	Point p2 = getPointP2(contoursPoint, p1, v1);
 	cvCircle(srcBw, p2, 5, CV_RGB(0, 255, 0), -1, 8, 0);
 	Point p24 = getPointP24(contoursPoint, v2, p25);
 	cvCircle(srcBw, p24, 5, CV_RGB(0, 255, 0), -1, 8, 0);
-	Point p3 = getPointP3(contoursPoint, p1, p2,v1);
+	Point p3 = getPointP3(contoursPoint, p1, p2, v1);
 	cvCircle(srcBw, p3, 5, CV_RGB(0, 255, 0), -1, 8, 0);
-	Point p23 = getPointP23(contoursPoint,p24,p25,v2);
+	Point p23 = getPointP23(contoursPoint, p24, p25, v2);
 	cvCircle(srcBw, p23, 5, CV_RGB(0, 255, 0), -1, 8, 0);
-	Point p4 = getPointP4(contoursPoint,p2,p3,v1,p6);
+	Point p4 = getPointP4(contoursPoint, p2, p3, v1, p6);
 	cvCircle(srcBw, p4, 5, CV_RGB(0, 255, 0), -1, 8, 0);
 	Point p5 = getPointP5(contoursPoint, p1, p2, v1, p6);
 	cvCircle(srcBw, p5, 5, CV_RGB(0, 255, 0), -1, 8, 0);
@@ -649,23 +726,31 @@ void getSpecialPoint27(IplImage *srcBw, vector<Point>contoursPoint){
 	cvCircle(srcBw, p21, 5, CV_RGB(0, 255, 0), -1, 8, 0);
 	Point p22 = getPointP22(contoursPoint, p24, p23, p20, v2);
 	cvCircle(srcBw, p22, 5, CV_RGB(0, 255, 0), -1, 8, 0);
-	Point p7 = getPointP7(contoursPoint,p5,p6,v3);
+	Point p7 = getPointP7(contoursPoint, p5, p6, v3);
 	cvCircle(srcBw, p7, 5, CV_RGB(0, 255, 0), -1, 8, 0);
-	Point p19 = getPointP19(contoursPoint,p21,p20,v4);
+	Point p19 = getPointP19(contoursPoint, p21, p20, v4);
 	cvCircle(srcBw, p19, 5, CV_RGB(0, 255, 0), -1, 8, 0);
 	Point p8 = getPointP8(contoursPoint, p6, p7, v3);
 	cvCircle(srcBw, p8, 5, CV_RGB(0, 255, 0), -1, 8, 0);
 	Point p18 = getPointP18(contoursPoint, p20, p19, v4);
 	cvCircle(srcBw, p18, 5, CV_RGB(0, 255, 0), -1, 8, 0);
-	Point p9 = getPointP9(contoursPoint,p6,p8,v3);
+	Point p9 = getPointP9(contoursPoint, p6, p8, v3);
 	cvCircle(srcBw, p9, 5, CV_RGB(0, 255, 0), -1, 8, 0);
-	Point p17 = getPointP17(contoursPoint,p20,p18,v4);
+	Point p17 = getPointP17(contoursPoint, p20, p18, v4);
 	cvCircle(srcBw, p17, 5, CV_RGB(0, 255, 0), -1, 8, 0);
 	Point p10 = getPointP10(contoursPoint, p8, p9, v3);
 	//Point p10 = getPointP10(contoursPoint,p9,p13,v3);
 	cvCircle(srcBw, p10, 5, CV_RGB(0, 255, 0), -1, 8, 0);
 	Point p16 = getPointP16(contoursPoint, p18, p17, v4);
 	cvCircle(srcBw, p16, 5, CV_RGB(0, 255, 0), -1, 8, 0);
+	Point p11 = getPointP11(contoursPoint, p9, p10, v3, p13);
+	cvCircle(srcBw, p11, 5, CV_RGB(0, 255, 0), -1, 8, 0);
+	Point p12 = getPointP12(contoursPoint, p8, p9, v3, p13);
+	cvCircle(srcBw, p12, 5, CV_RGB(0, 255, 0), -1, 8, 0);
+	Point p14 = getPointP14(contoursPoint, p18, p17, p13, v4);
+	cvCircle(srcBw, p14, 5, CV_RGB(0, 255, 0), -1, 8, 0);
+	Point p15 = getPointP15(contoursPoint, p17, p16, p13, v4);
+	cvCircle(srcBw, p15, 5, CV_RGB(0, 255, 0), -1, 8, 0);
 }
 int main()
 {
