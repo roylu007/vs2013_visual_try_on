@@ -30,6 +30,42 @@ double getCosAngle(Point pt1, Point pt2, Point pt0)
 	double dy2 = pt2.y - pt0.y;
 	return (dx1*dx2 + dy1*dy2) / sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
 }
+// 判断点是否在四边形内部
+// 参数：
+//      POINT pCur 指定的当前点 
+//		POINT pLT, POINT pLB, POINT pRB, POINT pRT, 四边形的四个点（依次连接的四个点）
+bool PtInAnyRect(Point pCur, Point pLT, Point pLB, Point pRB, Point pRT)
+{
+	//任意四边形有4个顶点
+	int nCount = 4;
+	Point RectPoints[4] = { pLT, pLB, pRB, pRT };
+	int nCross = 0;
+	for (int i = 0; i < nCount; i++)
+	{
+		//依次取相邻的两个点
+		Point pStart = RectPoints[i];
+		Point pEnd = RectPoints[(i + 1) % nCount];
+
+		//相邻的两个点是平行于x轴的，肯定不相交，忽略
+		if (pStart.y == pEnd.y)
+			continue;
+
+		//交点在pStart,pEnd的延长线上，pCur肯定不会与pStart.pEnd相交，忽略
+		if (pCur.y < min(pStart.y, pEnd.y) || pCur.y > max(pStart.y, pEnd.y))
+			continue;
+
+		//求当前点和x轴的平行线与pStart,pEnd直线的交点的x坐标
+		double x = (double)(pCur.y - pStart.y) * (double)(pEnd.x - pStart.x) / (double)(pEnd.y - pStart.y) + pStart.x;
+
+		//若x坐标大于当前点的坐标，则有交点
+		if (x > pCur.x)
+			nCross++;
+	}
+
+	// 单边交点为偶数，点在多边形之外 
+	return (nCross % 2 == 1);
+}
+
 Point getPointP0(vector<Point>contoursPoint, Point v0){//P0  --   neck of head
 	int cnt = 0;
 	int lens = contoursPoint.size();
@@ -651,6 +687,25 @@ void getSizeContours(vector<vector<Point>> &contours)
 		else ++itc;
 	}
 }
+vector<vector<Point>> getMaxSizeContours(vector<vector<Point>> &contours)
+{
+	vector<vector<Point>> res;
+	vector<Point>temp;
+	int cmax = 0;
+	vector<vector<Point>>::const_iterator itc = contours.begin();
+	while (itc != contours.end())
+	{
+		if ((itc->size()) > cmax )
+		{
+			cmax = itc->size();
+			temp.clear();
+			temp = *itc;
+		}
+		else ++itc;
+	}
+	res.push_back(temp);
+	return res;
+}
 void getBodyContoursPoint(vector<vector<Point>> &contours)
 {
 	int cmax = 0;   // 最大轮廓长度  
@@ -755,7 +810,9 @@ void getSpecialPoint27(IplImage *srcBw, vector<Point>contoursPoint){
 int main()
 {
 	IplImage *plmgsrc = cvLoadImage("cccc.png");
+	//IplImage *plmgsrc = cvLoadImage("gggg.png");
 	//IplImage *plmgsrc = cvLoadImage("bbbb.png");
+	//IplImage *plmgsrc = cvLoadImage("fffff.jpg");
 	if (!plmgsrc->imageData)
 	{
 		cout << "Fail to load image" << endl;
@@ -774,6 +831,7 @@ int main()
 	Mat cannyImage(plmgCanny);
 	Mat resulttemp;
 	fillHole(cannyImage, resulttemp);
+	//fillHole(resulttemp, resulttemp);
 	namedWindow("resulttemp2", 1);
 	imshow("afterfillhole", resulttemp);
 	/*int rows = plmgsrc->height;
@@ -792,10 +850,13 @@ int main()
 	cout << cnt << endl;
 	system("pause");*/
 	vector<vector<Point>> contours;
+	//vector<vector<Point>> contours2;
 	///////
 	//CV_CHAIN_APPROX_NONE  获取每个轮廓每个像素点  
 	findContours(resulttemp, contours, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
 	//getSizeContours(contours);
+	//contours2=getMaxSizeContours(contours);
+	cout << "contours_size=" << contours.size() << endl;
 	getBodyContoursPoint(contours);
 	cout << contours[contours.size() - 1].size() << endl;
 	Mat result(cannyImage.size(), CV_8U, Scalar(255));
