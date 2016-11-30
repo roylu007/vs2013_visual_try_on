@@ -8,6 +8,8 @@ int threshval = 160;
 int pointinterval = 200;
 vector<Point>contoursPoint1;
 vector<Point>contoursPoint2;
+vector<Point>featurePoints;
+vector<Point>auxiliaryPoints;
 int M = 10;
 void ProgramInitial(){
 	contoursPoint1.clear();
@@ -807,7 +809,41 @@ void getSpecialPoint27(IplImage *srcBw, vector<Point>contoursPoint){
 	Point p15 = getPointP15(contoursPoint, p17, p16, p13, v4);
 	cvCircle(srcBw, p15, 5, CV_RGB(0, 255, 0), -1, 8, 0);
 
+	featurePoints.push_back(p0);
+	featurePoints.push_back(p1);
+	featurePoints.push_back(p2);
+	featurePoints.push_back(p3);
+	featurePoints.push_back(p4);
+	featurePoints.push_back(p5);
+	featurePoints.push_back(p6);
+	featurePoints.push_back(p7);
+	featurePoints.push_back(p8);
+	featurePoints.push_back(p9);
+	featurePoints.push_back(p10);
+	featurePoints.push_back(p11);
+	featurePoints.push_back(p12);
+	featurePoints.push_back(p13);
+	featurePoints.push_back(p14);
+	featurePoints.push_back(p15);
+	featurePoints.push_back(p16);
+	featurePoints.push_back(p17);
+	featurePoints.push_back(p18);
+	featurePoints.push_back(p19);
+	featurePoints.push_back(p20);
+	featurePoints.push_back(p21);
+	featurePoints.push_back(p22);
+	featurePoints.push_back(p23);
+	featurePoints.push_back(p24);
+	featurePoints.push_back(p25);
+	featurePoints.push_back(p26);
 
+	auxiliaryPoints.push_back(v0);
+	auxiliaryPoints.push_back(v1);
+	auxiliaryPoints.push_back(v2);
+	auxiliaryPoints.push_back(v3);
+	auxiliaryPoints.push_back(v4);
+
+	cout << "bool" << PtInAnyRect(featurePoints[13], featurePoints[8], featurePoints[9], featurePoints[17], featurePoints[18]) << endl;
 }
 int main()
 {
