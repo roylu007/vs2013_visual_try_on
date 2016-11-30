@@ -806,6 +806,8 @@ void getSpecialPoint27(IplImage *srcBw, vector<Point>contoursPoint){
 	cvCircle(srcBw, p14, 5, CV_RGB(0, 255, 0), -1, 8, 0);
 	Point p15 = getPointP15(contoursPoint, p17, p16, p13, v4);
 	cvCircle(srcBw, p15, 5, CV_RGB(0, 255, 0), -1, 8, 0);
+
+
 }
 int main()
 {
