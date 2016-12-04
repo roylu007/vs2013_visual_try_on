@@ -1,16 +1,31 @@
 #include<opencv2/opencv.hpp>
 #include<iostream>
 #include<vector>
+#include<unordered_map>
+#include<map>
 #include<cmath>
+#define ABS_FLOAT_0 0.000001 
+
 using namespace std;
 using namespace cv;
 int threshval = 160;
 int pointinterval = 200;
+int M = 10;
+
 vector<Point>contoursPoint1;
 vector<Point>contoursPoint2;
 vector<Point>featurePoints;
 vector<Point>auxiliaryPoints;
-int M = 10;
+
+map<Point, int>mapBodyRegion;
+
+const Scalar color[]= { 
+	CV_RGB(255,0,0),		CV_RGB(0,255,0),		CV_RGB(0,0,255),
+	CV_RGB(255,255,0),		CV_RGB(255,0,255),		CV_RGB(0,255,255),
+	CV_RGB(128, 0, 0),		CV_RGB(0, 128, 0),		CV_RGB(0, 0, 128),
+	CV_RGB(128, 128, 0),	CV_RGB(128, 0, 128),	CV_RGB(0, 128, 128)
+};
+
 void ProgramInitial(){
 	contoursPoint1.clear();
 	contoursPoint2.clear();
@@ -32,6 +47,43 @@ double getCosAngle(Point pt1, Point pt2, Point pt0)
 	double dy2 = pt2.y - pt0.y;
 	return (dx1*dx2 + dy1*dy2) / sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
 }
+
+/**
+* @brief 计算三角形面积
+*/
+float GetTriangleSquar( Point pt0,  Point pt1,  Point pt2)
+{
+	Point AB, BC;
+	AB.x = pt1.x - pt0.x;
+	AB.y = pt1.y - pt0.y;
+	BC.x = pt2.x - pt1.x;
+	BC.y = pt2.y - pt1.y;
+	return abs((AB.x * BC.y - AB.y * BC.x)) / 2.0f;
+}
+
+/**
+* @brief 判断给定一点是否在三角形内或边上
+*/
+bool isInTriangle( Point A,  Point B,  Point C,  Point D)
+{
+	float SABC, SADB, SBDC, SADC;
+	SABC = GetTriangleSquar(A, B, C);
+	SADB = GetTriangleSquar(A, D, B);
+	SBDC = GetTriangleSquar(B, D, C);
+	SADC = GetTriangleSquar(A, D, C);
+
+	float SumSuqar = SADB + SBDC + SADC;
+
+	if ((-ABS_FLOAT_0 < (SABC - SumSuqar)) && ((SABC - SumSuqar) < ABS_FLOAT_0))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 // 判断点是否在四边形内部
 // 参数：
 //      POINT pCur 指定的当前点 
@@ -845,6 +897,37 @@ void getSpecialPoint27(IplImage *srcBw, vector<Point>contoursPoint){
 
 	cout << "bool" << PtInAnyRect(featurePoints[13], featurePoints[8], featurePoints[9], featurePoints[17], featurePoints[18]) << endl;
 }
+
+int getRegion(Point p){
+	if (PtInAnyRect(p, featurePoints[2], featurePoints[3], featurePoints[4], featurePoints[5]))			return 0;
+	if (PtInAnyRect(p, featurePoints[1], featurePoints[2], featurePoints[6], featurePoints[6]))			return 1;
+	if (PtInAnyRect(p, featurePoints[0], featurePoints[1], featurePoints[25], featurePoints[26]))		return 2;
+	if (PtInAnyRect(p, featurePoints[1], featurePoints[6], featurePoints[20], featurePoints[25]))		return 3;
+	if (PtInAnyRect(p, featurePoints[6], featurePoints[7], featurePoints[19], featurePoints[20]))		return 4;
+	if (PtInAnyRect(p, featurePoints[7], featurePoints[8], featurePoints[18], featurePoints[19]))		return 5;
+	if (PtInAnyRect(p, featurePoints[25], featurePoints[20], featurePoints[21], featurePoints[24]))		return 6;
+	if (PtInAnyRect(p, featurePoints[21], featurePoints[22], featurePoints[23], featurePoints[24]))		return 7;
+	if (isInTriangle(featurePoints[8], featurePoints[13], featurePoints[18], p))						return 8;
+	if (PtInAnyRect(p, featurePoints[8], featurePoints[9], featurePoints[12], featurePoints[13]))		return 9;
+	if (PtInAnyRect(p, featurePoints[9], featurePoints[10], featurePoints[11], featurePoints[12]))		return 10;
+	if (PtInAnyRect(p, featurePoints[13], featurePoints[14], featurePoints[17], featurePoints[18]))		return 11;
+	if (PtInAnyRect(p, featurePoints[14], featurePoints[15], featurePoints[16], featurePoints[17]))		return 12;
+}
+void getBodyRegion(Mat pic, IplImage *srcBw){
+	Mat temp = pic.clone();
+	int rows = temp.rows;
+	int cols = temp.cols;
+	for (int r = 0; r < rows; r++){
+		for (int c = 0; c < cols; c++){
+			if (temp.at<uchar>(r, c) == 0) continue;
+			Point tPoint = Point(c, r);
+			int regionIndex = getRegion(tPoint);
+	//		mapBodyRegion.insert(pair<Point,int>(tPoint,regionIndex));
+			cvCircle(srcBw, tPoint, 3, color[regionIndex], -1, 8, 0);
+		}
+	}
+
+}
 int main()
 {
 	IplImage *plmgsrc = cvLoadImage("cccc.png");
@@ -905,6 +988,7 @@ int main()
 	Mat src(plmgsrc);
 	getCircle200(plmgsrc, contours);
 	getSpecialPoint27(plmgsrc, contoursPoint2);
+	getBodyRegion(resulttemp, plmgsrc);
 	drawContours(src, contours, -1, Scalar(0, 0, 255, 0), 1);   // -1 表示所有轮廓
 	imshow("src", src);/**/
 	waitKey(0);
