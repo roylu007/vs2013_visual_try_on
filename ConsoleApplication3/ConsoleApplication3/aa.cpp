@@ -12,18 +12,33 @@ int threshval = 160;
 int pointinterval = 200;
 int M = 10;
 
+template<class T>
+class Compare
+{
+public:
+	int operator()(const T& A, const T& B)const
+	{
+		if (A.x > B.x )
+			return 0;
+		if (A.x == B.x && A.y > B.y) return 0;
+		return 1;
+	}
+};
+
 vector<Point>contoursPoint1;
 vector<Point>contoursPoint2;
 vector<Point>featurePoints;
 vector<Point>auxiliaryPoints;
 
-map<Point, int>mapBodyRegion;
+map<Point, int,Compare<Point> >mapBodyRegion;
+map<Point, int, Compare<Point> >mapUpGarmentRegion;
 
 const Scalar color[]= { 
-	CV_RGB(255,0,0),		CV_RGB(0,255,0),		CV_RGB(0,0,255),
-	CV_RGB(255,255,0),		CV_RGB(255,0,255),		CV_RGB(0,255,255),
-	CV_RGB(128, 0, 0),		CV_RGB(0, 128, 0),		CV_RGB(0, 0, 128),
-	CV_RGB(128, 128, 0),	CV_RGB(128, 0, 128),	CV_RGB(0, 128, 128)
+	CV_RGB(255, 0, 0), CV_RGB(0, 255, 0), CV_RGB(0, 0, 255),
+	CV_RGB(255, 255, 0), CV_RGB(255, 0, 255), CV_RGB(0, 255, 255),
+	CV_RGB(128, 0, 0), CV_RGB(0, 128, 0), CV_RGB(0, 0, 128),
+	CV_RGB(128, 128, 0), CV_RGB(128, 0, 128), CV_RGB(0, 128, 128),
+	CV_RGB(64, 0, 0),CV_RGB(0, 0, 0)
 };
 
 void ProgramInitial(){
@@ -900,20 +915,22 @@ void getSpecialPoint27(IplImage *srcBw, vector<Point>contoursPoint){
 
 int getRegion(Point p){
 	if (PtInAnyRect(p, featurePoints[2], featurePoints[3], featurePoints[4], featurePoints[5]))			return 0;
-	if (PtInAnyRect(p, featurePoints[1], featurePoints[2], featurePoints[6], featurePoints[6]))			return 1;
-	if (PtInAnyRect(p, featurePoints[0], featurePoints[1], featurePoints[25], featurePoints[26]))		return 2;
-	if (PtInAnyRect(p, featurePoints[1], featurePoints[6], featurePoints[20], featurePoints[25]))		return 3;
-	if (PtInAnyRect(p, featurePoints[6], featurePoints[7], featurePoints[19], featurePoints[20]))		return 4;
-	if (PtInAnyRect(p, featurePoints[7], featurePoints[8], featurePoints[18], featurePoints[19]))		return 5;
-	if (PtInAnyRect(p, featurePoints[25], featurePoints[20], featurePoints[21], featurePoints[24]))		return 6;
-	if (PtInAnyRect(p, featurePoints[21], featurePoints[22], featurePoints[23], featurePoints[24]))		return 7;
-	if (isInTriangle(featurePoints[8], featurePoints[13], featurePoints[18], p))						return 8;
-	if (PtInAnyRect(p, featurePoints[8], featurePoints[9], featurePoints[12], featurePoints[13]))		return 9;
-	if (PtInAnyRect(p, featurePoints[9], featurePoints[10], featurePoints[11], featurePoints[12]))		return 10;
-	if (PtInAnyRect(p, featurePoints[13], featurePoints[14], featurePoints[17], featurePoints[18]))		return 11;
-	if (PtInAnyRect(p, featurePoints[14], featurePoints[15], featurePoints[16], featurePoints[17]))		return 12;
+	else if (PtInAnyRect(p, featurePoints[1], featurePoints[2], featurePoints[5], featurePoints[6]))			return 1;
+	else if (PtInAnyRect(p, featurePoints[0], featurePoints[1], featurePoints[25], featurePoints[26]))		return 2;
+	else if (PtInAnyRect(p, featurePoints[1], featurePoints[6], featurePoints[20], featurePoints[25]))		return 3;
+	else if (PtInAnyRect(p, featurePoints[6], featurePoints[7], featurePoints[19], featurePoints[20]))		return 4;
+	else if (PtInAnyRect(p, featurePoints[7], featurePoints[8], featurePoints[18], featurePoints[19]))		return 5;
+	else if (PtInAnyRect(p, featurePoints[25], featurePoints[20], featurePoints[21], featurePoints[24]))		return 6;
+	else if (PtInAnyRect(p, featurePoints[21], featurePoints[22], featurePoints[23], featurePoints[24]))		return 7;
+	else if (isInTriangle(featurePoints[8], featurePoints[13], featurePoints[18], p))						return 8;
+	else if (PtInAnyRect(p, featurePoints[8], featurePoints[9], featurePoints[12], featurePoints[13]))		return 9;
+	else if (PtInAnyRect(p, featurePoints[9], featurePoints[10], featurePoints[11], featurePoints[12]))		return 10;
+	else if (PtInAnyRect(p, featurePoints[13], featurePoints[14], featurePoints[17], featurePoints[18]))		return 11;
+	else if (PtInAnyRect(p, featurePoints[14], featurePoints[15], featurePoints[16], featurePoints[17]))		return 12;
+	else return 13;
+
 }
-void getBodyRegion(Mat pic, IplImage *srcBw){
+void getBodyRegion(Mat& pic, IplImage *srcBw){
 	Mat temp = pic.clone();
 	int rows = temp.rows;
 	int cols = temp.cols;
@@ -922,15 +939,41 @@ void getBodyRegion(Mat pic, IplImage *srcBw){
 			if (temp.at<uchar>(r, c) == 0) continue;
 			Point tPoint = Point(c, r);
 			int regionIndex = getRegion(tPoint);
-	//		mapBodyRegion.insert(pair<Point,int>(tPoint,regionIndex));
+			mapBodyRegion.insert(pair<Point,int>(tPoint,regionIndex));
 			cvCircle(srcBw, tPoint, 3, color[regionIndex], -1, 8, 0);
+			//circle(pic, tPoint, 3, color[regionIndex], -1, 8, 0);
 		}
 	}
 
 }
+
+void getUpGarmentRegion(Mat& upgarment, Mat srcBw){
+	Mat temp = upgarment.clone();
+	int rows = temp.rows;
+	int cols = temp.cols;
+	//cvCircle(srcBw, Point(0,0), 10, color[0], -1, 8, 0);
+	for (int r = 0; r < rows; r++){
+		for (int c = 0; c < cols; c++){
+			if (temp.at<uchar>(r,c)==0) continue;
+			Point tPoint = Point(c, r);
+			/*if (mapBodyRegion.find(tPoint) != mapBodyRegion.end() && mapBodyRegion[tPoint] != 13){
+				int upGarmentRegionIndex = mapBodyRegion[tPoint];
+				mapUpGarmentRegion.insert(pair<Point, int>(tPoint, upGarmentRegionIndex));
+				//circle(upgarment, tPoint, 3, color[upGarmentRegionIndex], -1, 8, 0);
+				cvCircle(srcBw, tPoint, 3, color[upGarmentRegionIndex], -1, 8, 0);
+			}*/
+			//cout <<"getUpGarmentRegion"<< endl; 
+			int regionIndex = getRegion(tPoint);
+			//cout << regionIndex << endl;
+			mapUpGarmentRegion.insert(pair<Point, int>(tPoint, regionIndex));
+			circle(srcBw, tPoint, 3, color[regionIndex], -1, 8, 0);
+		}
+	}
+}
 int main()
 {
 	IplImage *plmgsrc = cvLoadImage("cccc.png");
+	
 	//IplImage *plmgsrc = cvLoadImage("gggg.png");
 	//IplImage *plmgsrc = cvLoadImage("bbbb.png");
 	//IplImage *plmgsrc = cvLoadImage("fffff.jpg");
@@ -991,6 +1034,33 @@ int main()
 	getBodyRegion(resulttemp, plmgsrc);
 	drawContours(src, contours, -1, Scalar(0, 0, 255, 0), 1);   // -1 表示所有轮廓
 	imshow("src", src);/**/
+
+
+	//upgarment
+	IplImage *srcUpGarment = cvLoadImage("garment\\allgarment.png");
+	if (!srcUpGarment->imageData)
+	{
+		cout << "Fail to load garment pic" << endl;
+		return 0;
+	}
+	Mat upGarment(srcUpGarment);
+	cout << upGarment.size() << "||||" << src.size() << endl;
+	Mat upGarment_cp = upGarment.clone();
+	Mat upgarment_binary, edge, upgarment_gray;
+	upgarment_binary.create(src.size(), src.type());
+	cvtColor(upGarment_cp, upgarment_gray, CV_BGR2GRAY);
+	// 【3】先用使用 3x3内核来降噪    
+	//blur(upgarment_gray, edge, Size(3, 3));
+	//type选THRESH_BINARY，大于阈值的设置为maxval(255),其它置0  
+	threshold(upgarment_gray, upgarment_binary, 90, 255, CV_THRESH_BINARY_INV);
+	
+	getUpGarmentRegion(upgarment_binary, upGarment_cp);
+	imshow("upgarment_binary", upgarment_binary);
+	imshow("upgarment clone", upGarment_cp);
+	imshow("upgarment", upGarment);
+	//upgarment
+
+
 	waitKey(0);
 	cvDestroyWindow("resulttemp");
 	cvDestroyWindow("resulttemp2");
