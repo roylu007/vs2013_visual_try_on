@@ -217,7 +217,6 @@ Point getPointP1(vector<Point>contoursPoint, Point p0){
 	}
 	return temp;
 }
-
 Point getPointV0(vector<Point>contoursPoint){//V0  --   top of head 
 	Point temp;
 	int min = 1024;
@@ -974,9 +973,6 @@ int main()
 {
 	IplImage *plmgsrc = cvLoadImage("cccc.png");
 	
-	//IplImage *plmgsrc = cvLoadImage("gggg.png");
-	//IplImage *plmgsrc = cvLoadImage("bbbb.png");
-	//IplImage *plmgsrc = cvLoadImage("fffff.jpg");
 	if (!plmgsrc->imageData)
 	{
 		cout << "Fail to load image" << endl;
@@ -1025,16 +1021,30 @@ int main()
 	cout << contours[contours.size() - 1].size() << endl;
 	Mat result(cannyImage.size(), CV_8U, Scalar(255));
 	drawContours(result, contours, -1, Scalar(0), 2);   // -1 表示所有轮廓  
+
+	Rect rect = boundingRect(contours[0]);//检测外轮廓  
+	
+
 	namedWindow("result", 1);
 	//cvSetMouseCallback("result", on_mouse, (IplImage *) result);
 	imshow("result", result);/**/
 	Mat src(plmgsrc);
 	getCircle200(plmgsrc, contours);
 	getSpecialPoint27(plmgsrc, contoursPoint2);
-	getBodyRegion(resulttemp, plmgsrc);
+	//getBodyRegion(resulttemp, plmgsrc);
 	drawContours(src, contours, -1, Scalar(0, 0, 255, 0), 1);   // -1 表示所有轮廓
+
+	rectangle(src, rect, Scalar(0, 0, 255), 3);//对外轮廓加矩形框
 	imshow("src", src);/**/
 
+	IplImage *bodyImage,*cpBodyImage;
+	bodyImage = &IplImage(src);
+	cpBodyImage = cvCreateImage(rect.size(), 8, 3);
+	cvSetImageROI(bodyImage,rect);
+	cvCopy(bodyImage, cpBodyImage);
+	Mat m_body(cpBodyImage);
+	imshow("body", m_body);
+	cvResetImageROI(bodyImage);
 
 	//upgarment
 	IplImage *srcUpGarment = cvLoadImage("garment\\allgarment.png");
